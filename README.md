@@ -1,18 +1,18 @@
-# Terracoin Sentinel
+# Quantis Network Sentinel
 
 All masternodes must run Sentinel.
 
 Will update instructions soon.
 
-1. Download [trcsentinel.exe](https://github.com/clockuniverse/WINsen/releases)
+1. Download [quansentinel.exe]
 2. Create a sentinel.conf file in the same directory that you downloaded trcsentinel.exe with this inside:
-terracoin_conf=C:\Users\USERNAME\AppData\Roaming\TerracoinCore\terracoin.conf
+quantisnet_conf=C:\Users\USERNAME\AppData\Roaming\QuantisNetCore\terracoin.conf
 
 Change the username part to your username on your computer.
 
-3. Go into %appdata% terracoincore
+3. Go into %appdata% QuantisNetCore
 
-Open terracoin.conf and make sure it has at least:
+Open quantisnet.conf and make sure it has at least:
 
 ```rpcuser=someuser
 rpcpassword=somepass
@@ -21,9 +21,9 @@ rpcport=13332
 rpcconnect=127.0.0.1
 ```
 
-Restart Terracoin-QT and wait for it to sync.
+Restart QuantisNet-QT and wait for it to sync.
 
-Run trcsentinel
+Run quansentinel
 
 Press 1.
 
