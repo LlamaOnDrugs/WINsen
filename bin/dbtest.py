@@ -9,10 +9,10 @@ import config
 from models import Superblock, Proposal, GovernanceObject, Setting, Signal, Vote, Outcome, Watchdog
 from models import VoteSignals, VoteOutcomes
 from peewee import PeeweeException  # , OperationalError, IntegrityError
-from QuantisNetd import QuantisNetDaemon
-import QuantisNetlib
+from quantisnetd import quantisnetDaemon
+import quantisnetlib
 from decimal import Decimal
-QuantisNetd = QuantisNetDaemon.from_QuantisNet_conf(config.QuantisNet_conf)
+quantisnetd = quantisnetDaemon.from_quantisnet_conf(config.quantisnet_conf)
 import misc
 # ==============================================================================
 # do stuff here
@@ -33,13 +33,13 @@ pr = Proposal(
 # )
 
 
-# TODO: make this a test, mock 'QuantisNetd' and tie a test block height to a
+# TODO: make this a test, mock 'quantisnetd' and tie a test block height to a
 # timestamp, ensure only unit testing a within_window method
 #
 # also, create the `within_window` or similar method & use that.
 #
 bh = 131112
-bh_epoch = QuantisNetd.block_height_to_epoch(bh)
+bh_epoch = quantisnetd.block_height_to_epoch(bh)
 
 fudge = 72000
 window_start = 1483689082 - fudge
@@ -56,7 +56,7 @@ else:
     print("Within window, we're good!")
 
 # pdb.set_trace()
-# QuantisNetd.get_object_list()
+# quantisnetd.get_object_list()
 # ==============================================================================
 # pdb.set_trace()
 1
