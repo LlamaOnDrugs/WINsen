@@ -58,23 +58,23 @@ def is_database_correctly_configured():
     return configured
 
 
-def has_QuantisNet_conf():
+def has_quantisnet_conf():
     import config
     import io
 
-    valid_QuantisNet_conf = False
+    valid_quantisnet_conf = False
 
-    # ensure QuantisNet_conf exists & readable
+    # ensure quantisnet_conf exists & readable
     #
-    # if not, print a message stating that QuantisNet Core must be installed and
-    # configured, including JSONRPC access in QuantisNet.conf
+    # if not, print a message stating that quantisnet Core must be installed and
+    # configured, including JSONRPC access in quantisnet.conf
     try:
-        f = io.open(config.QuantisNet_conf)
-        valid_QuantisNet_conf = True
+        f = io.open(config.quantisnet_conf)
+        valid_quantisnet_conf = True
     except IOError as e:
         print(e)
 
-    return valid_QuantisNet_conf
+    return valid_quantisnet_conf
 
 
 # === begin main
@@ -102,8 +102,8 @@ def main():
         input('Press [ENTER] to exit')
         sys.exit(1)
 
-    if not has_QuantisNet_conf():
-        print("QuantisNetCore must be installed and configured, including JSONRPC access in QuantisNet.conf")
+    if not has_quantisnet_conf():
+        print("quantisnetCore must be installed and configured, including JSONRPC access in quantisnet.conf")
         
         input('Press [ENTER] to exit')
         sys.exit(1)

@@ -4,7 +4,7 @@
 import argparse
 import sys
 import os
-from QuantisNet_config import QuantisNetConfig
+from quantisnet_config import quantisnetConfig
 
 default_sentinel_config = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '../sentinel.conf')
@@ -16,9 +16,9 @@ if not os.path.isfile(default_sentinel_config):
 
 sentinel_config_file = os.environ.get('SENTINEL_CONFIG', default_sentinel_config)
 
-sentinel_cfg = QuantisNetConfig.tokenize(sentinel_config_file)
+sentinel_cfg = quantisnetConfig.tokenize(sentinel_config_file)
 sentinel_version = "1.1.0"
-min_QuantisNetd_proto_version_with_sentinel_ping = 70210
+min_quantisnetd_proto_version_with_sentinel_ping = 70210
 
 
 def get_argarse():
@@ -41,28 +41,28 @@ def get_args():
 
     return args
 
-def get_QuantisNet_conf():
+def get_quantisnet_conf():
     args = get_args()
 
     if args.config:
-        QuantisNet_conf = args.config
+        quantisnet_conf = args.config
     else:
         home = os.environ.get('HOME')
         if home is not None:
             if sys.platform == 'darwin':
-                QuantisNet_conf = os.path.join(home, "Library/Application Support/QuantisNetCore/QuantisNet.conf")
+                quantisnet_conf = os.path.join(home, "Library/Application Support/quantisnetCore/quantisnet.conf")
             else:
-                QuantisNet_conf = os.path.join(home, ".QuantisNetcore/QuantisNet.conf")
+                quantisnet_conf = os.path.join(home, ".quantisnetcore/quantisnet.conf")
         else:
             home = os.getenv('APPDATA')
             if home is not None:
-                QuantisNet_conf = os.path.join(home, "QuantisNetcore\\QuantisNet.conf")
+                quantisnet_conf = os.path.join(home, "quantisnetcore\\quantisnet.conf")
             else:
-                QuantisNet_conf = 'QuantisNet.conf'
+                quantisnet_conf = 'quantisnet.conf'
         
-        QuantisNet_conf = sentinel_cfg.get('QuantisNet_conf', QuantisNet_conf)
+        quantisnet_conf = sentinel_cfg.get('quantisnet_conf', quantisnet_conf)
 
-    return QuantisNet_conf
+    return quantisnet_conf
 
 
 def get_network():
@@ -118,6 +118,6 @@ def get_db_conn():
     return db
 
 
-QuantisNet_conf = get_QuantisNet_conf()
+quantisnet_conf = get_quantisnet_conf()
 network = get_network()
 db = get_db_conn()
