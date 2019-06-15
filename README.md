@@ -6,7 +6,7 @@ Will update instructions soon.
 
 1. Download [quansentinel.exe]
 2. Create a sentinel.conf file in the same directory that you downloaded trcsentinel.exe with this inside:
-quantisnet_conf=C:\Users\USERNAME\AppData\Roaming\QuantisNetCore\terracoin.conf
+quantisnet_conf=C:\Users\USERNAME\AppData\Roaming\QuantisNetCore\quantisnet.conf
 
 Change the username part to your username on your computer.
 
