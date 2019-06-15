@@ -5,7 +5,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../lib
 import init
 import config
 import misc
-from terracoind import TerracoinDaemon
+from QuantisNetd import QuantisNetDaemon
 from models import Superblock, Proposal, GovernanceObject, Watchdog
 from models import VoteSignals, VoteOutcomes, Transient
 import socket
@@ -19,22 +19,22 @@ from scheduler import Scheduler
 import argparse
 from termcolor import colored
 
-# sync terracoind gobject list with our local relational DB backend
-def perform_terracoind_object_sync(terracoind):
-    GovernanceObject.sync(terracoind)
+# sync QuantisNetd gobject list with our local relational DB backend
+def perform_QuantisNetd_object_sync(QuantisNetd):
+    GovernanceObject.sync(QuantisNetd)
 
 
 # delete old watchdog objects, create new when necessary
-def watchdog_check(terracoind):
+def watchdog_check(QuantisNetd):
     printdbg("in watchdog_check")
 
     # delete expired watchdogs
-    for wd in Watchdog.expired(terracoind):
+    for wd in Watchdog.expired(QuantisNetd):
         printdbg("\tFound expired watchdog [%s], voting to delete" % wd.object_hash)
-        wd.vote(terracoind, VoteSignals.delete, VoteOutcomes.yes)
+        wd.vote(QuantisNetd, VoteSignals.delete, VoteOutcomes.yes)
 
     # now, get all the active ones...
-    active_wd = Watchdog.active(terracoind)
+    active_wd = Watchdog.active(QuantisNetd)
     active_count = active_wd.count()
 
     # none exist, submit a new one to the network
@@ -42,7 +42,7 @@ def watchdog_check(terracoind):
         # create/submit one
         printdbg("\tNo watchdogs exist... submitting new one.")
         wd = Watchdog(created_at=int(time.time()))
-        wd.submit(terracoind)
+        wd.submit(QuantisNetd)
 
     else:
         wd_list = sorted(active_wd, key=lambda wd: wd.object_hash)
@@ -50,35 +50,35 @@ def watchdog_check(terracoind):
         # highest hash wins
         winner = wd_list.pop()
         printdbg("\tFound winning watchdog [%s], voting VALID" % winner.object_hash)
-        winner.vote(terracoind, VoteSignals.valid, VoteOutcomes.yes)
+        winner.vote(QuantisNetd, VoteSignals.valid, VoteOutcomes.yes)
 
         # if remaining Watchdogs exist in the list, vote delete
         for wd in wd_list:
             printdbg("\tFound losing watchdog [%s], voting DELETE" % wd.object_hash)
-            wd.vote(terracoind, VoteSignals.delete, VoteOutcomes.yes)
+            wd.vote(QuantisNetd, VoteSignals.delete, VoteOutcomes.yes)
 
     printdbg("leaving watchdog_check")
 
 
-def prune_expired_proposals(terracoind):
+def prune_expired_proposals(QuantisNetd):
     # vote delete for old proposals
-    for proposal in Proposal.expired(terracoind.superblockcycle()):
-        proposal.vote(terracoind, VoteSignals.delete, VoteOutcomes.yes)
+    for proposal in Proposal.expired(QuantisNetd.superblockcycle()):
+        proposal.vote(QuantisNetd, VoteSignals.delete, VoteOutcomes.yes)
 
 
-# ping terracoind
-def sentinel_ping(terracoind):
+# ping QuantisNetd
+def sentinel_ping(QuantisNetd):
     printdbg("in sentinel_ping")
 
-    terracoind.ping()
+    QuantisNetd.ping()
 
     printdbg("leaving sentinel_ping")
 
 
-def attempt_superblock_creation(terracoind):
-    import terracoinlib
+def attempt_superblock_creation(QuantisNetd):
+    import QuantisNetlib
 
-    if not terracoind.is_masternode():
+    if not QuantisNetd.is_masternode():
         print("We are not a Masternode... can't submit superblocks!")
         return
 
@@ -89,7 +89,7 @@ def attempt_superblock_creation(terracoind):
     # has this masternode voted on *any* superblocks at the given event_block_height?
     # have we voted FUNDING=YES for a superblock for this specific event_block_height?
 
-    event_block_height = terracoind.next_superblock_height()
+    event_block_height = QuantisNetd.next_superblock_height()
 
     if Superblock.is_voted_funding(event_block_height):
         # printdbg("ALREADY VOTED! 'til next time!")
@@ -97,20 +97,20 @@ def attempt_superblock_creation(terracoind):
         # vote down any new SBs because we've already chosen a winner
         for sb in Superblock.at_height(event_block_height):
             if not sb.voted_on(signal=VoteSignals.funding):
-                sb.vote(terracoind, VoteSignals.funding, VoteOutcomes.no)
+                sb.vote(QuantisNetd, VoteSignals.funding, VoteOutcomes.no)
 
         # now return, we're done
         return
 
-    if not terracoind.is_govobj_maturity_phase():
+    if not QuantisNetd.is_govobj_maturity_phase():
         printdbg("Not in maturity phase yet -- will not attempt Superblock")
         return
 
-    proposals = Proposal.approved_and_ranked(proposal_quorum=terracoind.governance_quorum(), next_superblock_max_budget=terracoind.next_superblock_max_budget())
-    budget_max = terracoind.get_superblock_budget_allocation(event_block_height)
-    sb_epoch_time = terracoind.block_height_to_epoch(event_block_height)
+    proposals = Proposal.approved_and_ranked(proposal_quorum=QuantisNetd.governance_quorum(), next_superblock_max_budget=QuantisNetd.next_superblock_max_budget())
+    budget_max = QuantisNetd.get_superblock_budget_allocation(event_block_height)
+    sb_epoch_time = QuantisNetd.block_height_to_epoch(event_block_height)
 
-    sb = terracoinlib.create_superblock(proposals, event_block_height, budget_max, sb_epoch_time)
+    sb = QuantisNetlib.create_superblock(proposals, event_block_height, budget_max, sb_epoch_time)
     if not sb:
         printdbg("No superblock created, sorry. Returning.")
         return
@@ -118,12 +118,12 @@ def attempt_superblock_creation(terracoind):
     # find the deterministic SB w/highest object_hash in the DB
     dbrec = Superblock.find_highest_deterministic(sb.hex_hash())
     if dbrec:
-        dbrec.vote(terracoind, VoteSignals.funding, VoteOutcomes.yes)
+        dbrec.vote(QuantisNetd, VoteSignals.funding, VoteOutcomes.yes)
 
         # any other blocks which match the sb_hash are duplicates, delete them
         for sb in Superblock.select().where(Superblock.sb_hash == sb.hex_hash()):
             if not sb.voted_on(signal=VoteSignals.funding):
-                sb.vote(terracoind, VoteSignals.delete, VoteOutcomes.yes)
+                sb.vote(QuantisNetd, VoteSignals.delete, VoteOutcomes.yes)
 
         printdbg("VOTED FUNDING FOR SB! We're done here 'til next superblock cycle.")
         return
@@ -131,24 +131,24 @@ def attempt_superblock_creation(terracoind):
         printdbg("The correct superblock wasn't found on the network...")
 
     # if we are the elected masternode...
-    if (terracoind.we_are_the_winner()):
+    if (QuantisNetd.we_are_the_winner()):
         printdbg("we are the winner! Submit SB to network")
-        sb.submit(terracoind)
+        sb.submit(QuantisNetd)
 
 
-def check_object_validity(terracoind):
+def check_object_validity(QuantisNetd):
     # vote (in)valid objects
     for gov_class in [Proposal, Superblock]:
         for obj in gov_class.select():
-            obj.vote_validity(terracoind)
+            obj.vote_validity(QuantisNetd)
 
 
-def is_terracoind_port_open(terracoind):
+def is_QuantisNetd_port_open(QuantisNetd):
     # test socket open before beginning, display instructive message to MN
     # operators if it's not
     port_open = False
     try:
-        info = terracoind.rpc_command('getgovernanceinfo')
+        info = QuantisNetd.rpc_command('getgovernanceinfo')
         port_open = True
     except (socket.error, JSONRPCException) as e:
         print("%s" % e)
@@ -157,21 +157,21 @@ def is_terracoind_port_open(terracoind):
 
 
 def main():
-    terracoind = TerracoinDaemon.from_terracoin_conf(config.terracoin_conf)
+    QuantisNetd = QuantisNetDaemon.from_QuantisNet_conf(config.QuantisNet_conf)
     options = process_args()
 
-    # check terracoind connectivity
-    if not is_terracoind_port_open(terracoind):
-        print(colored("Cannot connect to terracoind. Please ensure terracoind is running and the JSONRPC port is open to Sentinel.", 'red'))
+    # check QuantisNetd connectivity
+    if not is_QuantisNetd_port_open(QuantisNetd):
+        print(colored("Cannot connect to QuantisNetd. Please ensure QuantisNetd is running and the JSONRPC port is open to Sentinel.", 'red'))
         return
 
-    # check terracoind sync
-    if not terracoind.is_synced():
-        print(colored("terracoind not synced with network! Awaiting full sync before running Sentinel.", 'yellow'))
+    # check QuantisNetd sync
+    if not QuantisNetd.is_synced():
+        print(colored("QuantisNetd not synced with network! Awaiting full sync before running Sentinel.", 'yellow'))
         return
 
     # ensure valid masternode
-    if not terracoind.is_masternode():
+    if not QuantisNetd.is_masternode():
         print(colored('yellow', "Invalid Masternode Status, cannot continue."))
         return
 
@@ -203,22 +203,22 @@ def main():
     # ========================================================================
     #
     # load "gobject list" rpc command data, sync objects into internal database
-    perform_terracoind_object_sync(terracoind)
+    perform_QuantisNetd_object_sync(QuantisNetd)
 
-    if terracoind.has_sentinel_ping:
-        sentinel_ping(terracoind)
+    if QuantisNetd.has_sentinel_ping:
+        sentinel_ping(QuantisNetd)
     else:
         # delete old watchdog objects, create a new if necessary
-        watchdog_check(terracoind)
+        watchdog_check(QuantisNetd)
 
     # auto vote network objects as valid/invalid
-    # check_object_validity(terracoind)
+    # check_object_validity(QuantisNetd)
 
     # vote to delete expired proposals
-    prune_expired_proposals(terracoind)
+    prune_expired_proposals(QuantisNetd)
 
     # create a Superblock if necessary
-    attempt_superblock_creation(terracoind)
+    attempt_superblock_creation(QuantisNetd)
 
     # schedule the next run
     Scheduler.schedule_next_run()
@@ -248,7 +248,7 @@ def process_args():
 def entrypoint():
     # ensure another instance of Sentinel pointing at the same config
     # is not currently running
-    mutex_key = 'SENTINEL_RUNNING_' + config.terracoin_conf
+    mutex_key = 'SENTINEL_RUNNING_' + config.QuantisNet_conf
 
     atexit.register(cleanup, mutex_key)
     signal.signal(signal.SIGINT, signal_handler)

@@ -58,23 +58,23 @@ def is_database_correctly_configured():
     return configured
 
 
-def has_terracoin_conf():
+def has_QuantisNet_conf():
     import config
     import io
 
-    valid_terracoin_conf = False
+    valid_QuantisNet_conf = False
 
-    # ensure terracoin_conf exists & readable
+    # ensure QuantisNet_conf exists & readable
     #
-    # if not, print a message stating that Terracoin Core must be installed and
-    # configured, including JSONRPC access in terracoin.conf
+    # if not, print a message stating that QuantisNet Core must be installed and
+    # configured, including JSONRPC access in QuantisNet.conf
     try:
-        f = io.open(config.terracoin_conf)
-        valid_terracoin_conf = True
+        f = io.open(config.QuantisNet_conf)
+        valid_QuantisNet_conf = True
     except IOError as e:
         print(e)
 
-    return valid_terracoin_conf
+    return valid_QuantisNet_conf
 
 
 # === begin main
@@ -102,8 +102,8 @@ def main():
         input('Press [ENTER] to exit')
         sys.exit(1)
 
-    if not has_terracoin_conf():
-        print("TerracoinCore must be installed and configured, including JSONRPC access in terracoin.conf")
+    if not has_QuantisNet_conf():
+        print("QuantisNetCore must be installed and configured, including JSONRPC access in QuantisNet.conf")
         
         input('Press [ENTER] to exit')
         sys.exit(1)

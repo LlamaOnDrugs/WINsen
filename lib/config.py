@@ -4,7 +4,7 @@
 import argparse
 import sys
 import os
-from terracoin_config import TerracoinConfig
+from QuantisNet_config import QuantisNetConfig
 
 default_sentinel_config = os.path.normpath(
     os.path.join(os.path.dirname(__file__), '../sentinel.conf')
@@ -16,9 +16,9 @@ if not os.path.isfile(default_sentinel_config):
 
 sentinel_config_file = os.environ.get('SENTINEL_CONFIG', default_sentinel_config)
 
-sentinel_cfg = TerracoinConfig.tokenize(sentinel_config_file)
+sentinel_cfg = QuantisNetConfig.tokenize(sentinel_config_file)
 sentinel_version = "1.1.0"
-min_terracoind_proto_version_with_sentinel_ping = 70210
+min_QuantisNetd_proto_version_with_sentinel_ping = 70210
 
 
 def get_argarse():
@@ -41,28 +41,28 @@ def get_args():
 
     return args
 
-def get_terracoin_conf():
+def get_QuantisNet_conf():
     args = get_args()
 
     if args.config:
-        terracoin_conf = args.config
+        QuantisNet_conf = args.config
     else:
         home = os.environ.get('HOME')
         if home is not None:
             if sys.platform == 'darwin':
-                terracoin_conf = os.path.join(home, "Library/Application Support/TerracoinCore/terracoin.conf")
+                QuantisNet_conf = os.path.join(home, "Library/Application Support/QuantisNetCore/QuantisNet.conf")
             else:
-                terracoin_conf = os.path.join(home, ".terracoincore/terracoin.conf")
+                QuantisNet_conf = os.path.join(home, ".QuantisNetcore/QuantisNet.conf")
         else:
             home = os.getenv('APPDATA')
             if home is not None:
-                terracoin_conf = os.path.join(home, "terracoincore\\terracoin.conf")
+                QuantisNet_conf = os.path.join(home, "QuantisNetcore\\QuantisNet.conf")
             else:
-                terracoin_conf = 'terracoin.conf'
+                QuantisNet_conf = 'QuantisNet.conf'
         
-        terracoin_conf = sentinel_cfg.get('terracoin_conf', terracoin_conf)
+        QuantisNet_conf = sentinel_cfg.get('QuantisNet_conf', QuantisNet_conf)
 
-    return terracoin_conf
+    return QuantisNet_conf
 
 
 def get_network():
@@ -118,6 +118,6 @@ def get_db_conn():
     return db
 
 
-terracoin_conf = get_terracoin_conf()
+QuantisNet_conf = get_QuantisNet_conf()
 network = get_network()
 db = get_db_conn()
