@@ -1,6 +1,6 @@
 from bin import sentinel
 from lib import config
-from lib import terracoin_config
+from lib import quantisnet_config
 import time
 import datetime
 import sys
@@ -55,18 +55,18 @@ def fix_masternode(data_folder):
         wallet_file = os.path.join(data_folder, 'wallet.dat')
 
         if not os.path.isfile(wallet_file):
-            print('It seems like the data folder (the one containing wallet.dat) is not the same as the folder where terracoin.conf is')
+            print('It seems like the data folder (the one containing wallet.dat) is not the same as the folder where quantisnet.conf is')
             data_folder = input('Please, write the data folder path: ')
             return fix_masternode(data_folder)
 
-        print(colored('Make a copy of "wallet.dat" and "terracoin.conf" before continuing.\nThis program will try it best not to touch them, but just in case!', attrs=['bold']))
+        print(colored('Make a copy of "wallet.dat" and "quantisnet.conf" before continuing.\nThis program will try it best not to touch them, but just in case!', attrs=['bold']))
         confirm = input('Once done, press [ENTER], or write cancel + [ENTER] to exit\n')
         if confirm.lower() == "cancel":
             return
 
         print(colored('Removing conflicting files', 'green'))
         for filename in os.listdir(data_folder):
-            if filename in ('wallet.dat', 'terracoin.conf'):
+            if filename in ('wallet.dat', 'quantisnet.conf'):
                 continue
             
             realpath = os.path.join(data_folder, filename)
@@ -80,8 +80,8 @@ def fix_masternode(data_folder):
         print(colored('Done removing', 'green'))
         print('')
 
-        print(colored('Checking terracoin.conf contents', 'green'))
-        tokens = terracoin_config.TerracoinConfig.tokenize(config.terracoin_conf)
+        print(colored('Checking quantisnet.conf contents', 'green'))
+        tokens = quantisnet_config.quantisnetConfig.tokenize(config.quantisnet_conf)
 
         # Check if needed tokens are there, set them if not
         tokens['rpcuser'] = tokens.get('rpcuser', random_string(18))
@@ -97,7 +97,7 @@ def fix_masternode(data_folder):
         except:
             r = None
             while r not in ('y', 'n'):
-                print(colored('It seems like your terracoin.conf is not setting the wallet as masternode!', 'red'))
+                print(colored('It seems like your quantisnet.conf is not setting the wallet as masternode!', 'red'))
                 print(colored('If your are running a COLD wallet, this must be executed on the MN wallet, not the collateral', 'red'))
                 print(colored('If you are using MNs hosts like HostMNs DO NOT continue, this should be done by them, not you!', 'red'))
                 r = input(colored('Continuing will set masternode=1, don\'t do it if this is a collateral wallet, [y/n]: ', 'red', attrs=['bold']))
@@ -114,21 +114,21 @@ def fix_masternode(data_folder):
 
         # It must have a masternodeprivkey
         if 'masternodeprivkey' not in tokens:
-            print(colored('Your terracoin.conf does not contain a \'masternodeprivkey\' entry, please set it up before opening your wallet', 'red'))
+            print(colored('Your quantisnet.conf does not contain a \'masternodeprivkey\' entry, please set it up before opening your wallet', 'red'))
 
         # Rewrite config
-        with open(config.terracoin_conf, 'w') as fp:
+        with open(config.quantisnet_conf, 'w') as fp:
             for k, v in tokens.items():
                 fp.write('{}={}\n'.format(k, v))
 
         print(colored('Done checking\n', 'green'))
-        print(colored('Please open your wallet (terracoind on linux) and wait for it completely load/open before continuing', attrs=['bold']))
+        print(colored('Please open your wallet (quantisnetd on linux) and wait for it completely load/open before continuing', attrs=['bold']))
         input('Press [ENTER] to continue')
         print('')
 
         print(colored('Sentinel will automatically start in 15s', 'green', attrs=['bold']))
         print(colored('Until the wallet is fully synced, sentinel will show errors related to sync status, that\'s fine!', 'green'))
-        print(colored('If it says it can not connect, check your terracoin.conf settings', 'yellow'))
+        print(colored('If it says it can not connect, check your quantisnet.conf settings', 'yellow'))
 
         r = 15
         while r > 0:
@@ -233,12 +233,12 @@ if __name__ == '__main__':
     if os.path.isfile(config.sentinel_config_file):
         print(colored('Using sentinel.conf: {}'.format(config.sentinel_config_file), 'green'))
 
-    print(colored('Using terracoin.conf: {}'.format(config.terracoin_conf), 'green'))
+    print(colored('Using quantisnet.conf: {}'.format(config.quantisnet_conf), 'green'))
 
     option = menu()
     if option == 1: 
         run_sentinel()
     elif option == 2: 
         # Use default data folder
-        data_folder = os.path.dirname(config.terracoin_conf)
+        data_folder = os.path.dirname(config.quantisnet_conf)
         fix_masternode(data_folder)
