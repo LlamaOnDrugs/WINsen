@@ -6,13 +6,13 @@ os.environ['SENTINEL_CONFIG'] = os.path.normpath(os.path.join(os.path.dirname(__
 os.environ['SENTINEL_ENV'] = 'test'
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(__file__), '../../lib')))
 import config
-from terracoin_config import TerracoinConfig
+from quantisnet_config import quantisnetConfig
 
 
 @pytest.fixture
-def terracoin_conf(**kwargs):
+def quantisnet_conf(**kwargs):
     defaults = {
-        'rpcuser': 'terracoinrpc',
+        'rpcuser': 'quantisnetrpc',
         'rpcpassword': 'EwJeV3fZTyTVozdECF627BkBMnNDwQaVLakG3A4wXYyk',
         'rpcport': 29241,
     }
@@ -34,35 +34,35 @@ rpcport={rpcport}
 
 
 def test_get_rpc_creds():
-    terracoin_config = terracoin_conf()
-    creds = TerracoinConfig.get_rpc_creds(terracoin_config, 'testnet')
+    quantisnet_config = quantisnet_conf()
+    creds = quantisnetConfig.get_rpc_creds(quantisnet_config, 'testnet')
 
     for key in ('user', 'password', 'port'):
         assert key in creds
-    assert creds.get('user') == 'terracoinrpc'
+    assert creds.get('user') == 'quantisnetrpc'
     assert creds.get('password') == 'EwJeV3fZTyTVozdECF627BkBMnNDwQaVLakG3A4wXYyk'
     assert creds.get('port') == 29241
 
-    terracoin_config = terracoin_conf(rpcpassword='s00pers33kr1t', rpcport=8000)
-    creds = TerracoinConfig.get_rpc_creds(terracoin_config, 'testnet')
+    quantisnet_config = quantisnet_conf(rpcpassword='s00pers33kr1t', rpcport=8000)
+    creds = quantisnetConfig.get_rpc_creds(quantisnet_config, 'testnet')
 
     for key in ('user', 'password', 'port'):
         assert key in creds
-    assert creds.get('user') == 'terracoinrpc'
+    assert creds.get('user') == 'quantisnetrpc'
     assert creds.get('password') == 's00pers33kr1t'
     assert creds.get('port') == 8000
 
-    no_port_specified = re.sub('\nrpcport=.*?\n', '\n', terracoin_conf(), re.M)
-    creds = TerracoinConfig.get_rpc_creds(no_port_specified, 'testnet')
+    no_port_specified = re.sub('\nrpcport=.*?\n', '\n', quantisnet_conf(), re.M)
+    creds = quantisnetConfig.get_rpc_creds(no_port_specified, 'testnet')
 
     for key in ('user', 'password', 'port'):
         assert key in creds
-    assert creds.get('user') == 'terracoinrpc'
+    assert creds.get('user') == 'quantisnetrpc'
     assert creds.get('password') == 'EwJeV3fZTyTVozdECF627BkBMnNDwQaVLakG3A4wXYyk'
     assert creds.get('port') == 18332
 
 
-# ensure terracoin network (mainnet, testnet) matches that specified in config
-# requires running terracoind on whatever port specified...
+# ensure quantisnet network (mainnet, testnet) matches that specified in config
+# requires running quantisnetd on whatever port specified...
 #
-# This is more of a terracoind/jsonrpc test than a config test...
+# This is more of a quantisnetd/jsonrpc test than a config test...
